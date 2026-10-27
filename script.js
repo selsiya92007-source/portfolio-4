@@ -1,3 +1,4 @@
+
 // ===== MOBILE NAVIGATION =====
 const menuToggle = document.getElementById("menuToggle");
 const navLinks = document.getElementById("navLinks");
@@ -5,36 +6,47 @@ const navLinks = document.getElementById("navLinks");
 menuToggle.addEventListener("click", function () {
     const isOpen = navLinks.classList.toggle("open");
 
+    menuToggle.textContent = isOpen ? "✕" : "☰";
     menuToggle.setAttribute("aria-expanded", String(isOpen));
     menuToggle.setAttribute(
         "aria-label",
-        isOpen ? "Close navigation menu" : "Open navigation menu"
+        isOpen ? "Close menu" : "Open menu"
     );
-    menuToggle.textContent = isOpen ? "✕" : "☰";
 });
 
-// Close mobile navigation after selecting a section
-document.querySelectorAll("#navLinks a").forEach(function (link) {
+navLinks.querySelectorAll("a").forEach(function (link) {
     link.addEventListener("click", function () {
         navLinks.classList.remove("open");
-        menuToggle.setAttribute("aria-expanded", "false");
-        menuToggle.setAttribute("aria-label", "Open navigation menu");
         menuToggle.textContent = "☰";
+        menuToggle.setAttribute("aria-expanded", "false");
+        menuToggle.setAttribute("aria-label", "Open menu");
     });
 });
 
-// ===== LIGHT AND DARK THEME =====
-const themeToggle = document.getElementById("themeToggle");
+// ===== ACTIVE NAVIGATION =====
+const sections = document.querySelectorAll("main section[id]");
+const navItems = document.querySelectorAll(".nav-links a");
 
-themeToggle.addEventListener("click", function () {
-    const isDark = document.body.classList.toggle("dark-theme");
+if ("IntersectionObserver" in window) {
+    const observer = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+            if (entry.isIntersecting) {
+                navItems.forEach(function (link) {
+                    const active =
+                        link.getAttribute("href") === "#" + entry.target.id;
 
-    themeToggle.textContent = isDark ? "☀️" : "🌙";
-    themeToggle.setAttribute(
-        "aria-label",
-        isDark ? "Switch to light theme" : "Switch to dark theme"
-    );
-});
+                    link.classList.toggle("active", active);
+                });
+            }
+        });
+    }, {
+        rootMargin: "-20% 0px -65% 0px"
+    });
+
+    sections.forEach(function (section) {
+        observer.observe(section);
+    });
+}
 
 // ===== PROJECT FILTERS =====
 const filterButtons = document.querySelectorAll(".filter-btn");
@@ -53,35 +65,36 @@ filterButtons.forEach(function (button) {
         button.setAttribute("aria-pressed", "true");
 
         projectCards.forEach(function (card) {
-            const matches =
-                filter === "all" || card.dataset.category === filter;
+            const show =
+                filter === "all" ||
+                card.dataset.category === filter;
 
-            card.hidden = !matches;
+            card.hidden = !show;
         });
     });
 });
 
-// ===== EXPAND PROJECT DETAILS =====
+// ===== PROJECT DETAILS =====
 document.querySelectorAll(".details-btn").forEach(function (button) {
     button.addEventListener("click", function () {
         const card = button.closest(".project-card");
         const details = card.querySelector(".extra-details");
 
-        const isExpanded =
+        const expanded =
             button.getAttribute("aria-expanded") === "true";
 
-        button.setAttribute("aria-expanded", String(!isExpanded));
-        details.hidden = isExpanded;
+        button.setAttribute("aria-expanded", String(!expanded));
+        details.hidden = expanded;
+        button.textContent = expanded ? "+" : "−";
 
-        button.textContent = isExpanded ? "→" : "×";
         button.setAttribute(
             "aria-label",
-            isExpanded ? "Show project details" : "Hide project details"
+            expanded ? "Show project details" : "Hide project details"
         );
     });
 });
 
-// ===== CONTACT FORM VALIDATION =====
+// ===== CONTACT FORM =====
 const contactForm = document.getElementById("contactForm");
 const formMessage = document.getElementById("formMessage");
 
@@ -94,59 +107,10 @@ contactForm.addEventListener("submit", function (event) {
     }
 
     formMessage.textContent =
-        "Thank you! Your form is valid. No message has been sent.";
+        "Thank you! Your form is valid. No message has been sent yet.";
 
     contactForm.reset();
 });
-
-// ===== BACK TO TOP BUTTON =====
-const backToTop = document.getElementById("backToTop");
-
-function updateBackToTop() {
-    backToTop.classList.toggle("show", window.scrollY > 300);
-}
-
-window.addEventListener("scroll", updateBackToTop, {
-    passive: true
-});
-
-updateBackToTop();
-
-backToTop.addEventListener("click", function () {
-    window.scrollTo({
-        top: 0,
-        behavior: "smooth"
-    });
-});
-
-// ===== CURRENT NAVIGATION HIGHLIGHT =====
-const pageSections = document.querySelectorAll("main section[id]");
-const pageLinks = document.querySelectorAll("#navLinks a");
-
-if ("IntersectionObserver" in window) {
-    const sectionObserver = new IntersectionObserver(
-        function (entries) {
-            entries.forEach(function (entry) {
-                if (entry.isIntersecting) {
-                    pageLinks.forEach(function (link) {
-                        const isCurrent =
-                            link.getAttribute("href") ===
-                            "#" + entry.target.id;
-
-                        link.classList.toggle("active", isCurrent);
-                    });
-                }
-            });
-        },
-        {
-            rootMargin: "-20% 0px -65% 0px"
-        }
-    );
-
-    pageSections.forEach(function (section) {
-        sectionObserver.observe(section);
-    });
-}
 
 // ===== AUTOMATIC FOOTER YEAR =====
 document.getElementById("year").textContent =
